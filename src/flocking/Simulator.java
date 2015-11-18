@@ -1,16 +1,12 @@
-package view;
+package flocking;
 
-import flocking.BoidController;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import utils.Vector;
 import view.scene.camera.Camera;
-import view.scene.Quadcopter;
 import view.scene.Shader;
-
-import java.util.ArrayList;
 
 import static org.lwjgl.opengl.GL11.*;
 
