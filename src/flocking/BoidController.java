@@ -10,7 +10,7 @@ import java.util.Random;
 /**
  * Created by solovyevt on 14.11.15 14:10.
  */
-public class BoidController {
+public class BoidController{
 
     private float maxVelocity;
 
@@ -81,7 +81,7 @@ public class BoidController {
             new Tuple<>(5f, 0.01f),
             new Tuple<>(1f, 1f),
             new Tuple<>(4f, 0.1f),
-            new Tuple<>(3f, 0.1f),
+            new Tuple<>(3f, 1f),
             new Tuple<>(4f, 0.03f),
             new Tuple<>(4f, 0.01f),
             new Tuple<>(4f, 0.1f),
@@ -90,10 +90,10 @@ public class BoidController {
             new Tuple<>(0f, 0.000001f),
             new Tuple<>(1f, 1f),
             new Tuple<>(1f, 0.1f),
-            new Tuple<>(3f, 0.1f),
+            new Tuple<>(3f, 1f),
             new Tuple<>(4f, 0.05f),
             new Tuple<>(4f, 0.1f),
-            new Tuple<>(8f, 0.01f),
+            new Tuple<>(8f, 0.005f),
     };
 
     public Vector getCenter() {

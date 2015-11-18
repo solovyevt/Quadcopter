@@ -15,7 +15,7 @@ import java.util.ArrayList;
 /*
 REMEMBAH: может быть несколько групп боидов, и каждая группа может иметь свои правила поведения
  */
-public class Boid {
+public class Boid extends Thread {
     public final int RANK;
     float defaultVelocity = 0.1f;
     BoidController controller;
@@ -183,7 +183,7 @@ public class Boid {
         Vector chaseDirection = new Vector(0);
         ArrayList<Boid> prey = this.getPrey(r);
         for (Boid p : prey) {
-            chaseDirection = Vector.add(chaseDirection, Vector.sub(p.currentPosition, this.currentPosition));
+            chaseDirection = Vector.add(chaseDirection, Vector.mul(Vector.sub(p.currentPosition, this.currentPosition), 1/ Vector.distance(p.currentPosition, this.currentPosition)));
         }
         //chaseDirection = Vector.div(chaseDirection, prey.size());
         return (prey.size() == 0) ? chaseDirection : Vector.div(chaseDirection, prey.size());
@@ -192,5 +192,9 @@ public class Boid {
 
     ArrayList getObstacles(float r){
         return new ArrayList();
+    }
+    @Override
+    public void run(){
+        calculateNewPosition();
     }
 }
