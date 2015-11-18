@@ -70,29 +70,29 @@ public class BoidController {
         return boids;
     }
 
-    public void render(float dt){
+    public void render(){
         calculateNewPositions();
         for(Boid b: boids){
-            b.render(dt);
+            b.render();
         }
     }
 
     private final Tuple[] boidPreset = {
             new Tuple<>(5f, 0.01f),
-            new Tuple<>(2f, 1f),
+            new Tuple<>(1f, 1f),
             new Tuple<>(4f, 0.1f),
             new Tuple<>(3f, 0.1f),
-            new Tuple<>(2f, 0.1f),
-            new Tuple<>(4f, 0.1f),
+            new Tuple<>(4f, 0.03f),
+            new Tuple<>(4f, 0.01f),
             new Tuple<>(4f, 0.1f),
     };
     private final Tuple[] predatorPreset = {
-            new Tuple<>(5f, 0.0001f),
+            new Tuple<>(0f, 0.000001f),
             new Tuple<>(1f, 1f),
             new Tuple<>(1f, 0.1f),
             new Tuple<>(3f, 0.1f),
-            new Tuple<>(2f, 0.1f),
-            new Tuple<>(5f, 0f),
+            new Tuple<>(4f, 0.05f),
+            new Tuple<>(4f, 0.1f),
             new Tuple<>(8f, 0.01f),
     };
 

@@ -64,7 +64,7 @@ public class Boid {
         return currentPosition;
     }
 
-    public void render(float dt){
+    public void render(){
         GL11.glPushMatrix();
         GL11.glTranslatef(currentPosition.x, currentPosition.y, currentPosition.z);
         Primitives.setColor(this.color);
@@ -133,7 +133,7 @@ public class Boid {
         for(Boid b: neighbors){
             center = Vector.add(center, b.getCurrentPosition());
         }
-        //center = Vector.div(center, neighbors.size());
+        center = neighbors.size() == 0 ? center : Vector.div(center, neighbors.size());
         return Vector.sub(center, this.currentPosition);
     }
 
@@ -143,21 +143,17 @@ public class Boid {
         ArrayList obstacles = this.getObstacles(r);
         return dodgeDirection;
     }
-    ArrayList getObstacles(float r){
-        return new ArrayList();
-    }
+
 
     //Правило выравнивающее скорость с соседними боидами
     Vector keepVelocity(float r){
         Vector acceleration = new Vector(0);
         ArrayList<Boid> neighbors = this.getNeighbors(r);
         for (Boid b : neighbors) {
-                if (Vector.distance(b.currentPosition, this.currentPosition) < r) {
-                    acceleration = Vector.add(acceleration, b.currentVelocity);
-                }
+            acceleration = Vector.add(acceleration, b.currentVelocity);
         }
         //acceleration = Vector.div(acceleration, neighbors.size());
-        return acceleration;
+        return (neighbors.size() == 0) ? acceleration : Vector.div(acceleration, neighbors.size());
     }
 
     //Уклонение от соседей
@@ -165,9 +161,7 @@ public class Boid {
         Vector dodgeDirection = new Vector(0);
         ArrayList<Boid> neighbors = this.getNeighbors(r);
         for (Boid b : neighbors) {
-            if (Vector.distance(b.currentPosition, this.currentPosition) < r) {
-                    dodgeDirection = Vector.sub(dodgeDirection, Vector.mul(Vector.sub(b.currentPosition, this.currentPosition), 1/Vector.distance(b.currentPosition, this.currentPosition)));
-            }
+            dodgeDirection = Vector.sub(dodgeDirection, Vector.mul(Vector.sub(b.currentPosition, this.currentPosition), 1 / Vector.distance(b.currentPosition, this.currentPosition)));
         }
         //dodgeDirection = Vector.div(dodgeDirection, neighbors.size());
         return (neighbors.size() == 0) ? dodgeDirection : Vector.div(dodgeDirection, neighbors.size());
@@ -178,9 +172,7 @@ public class Boid {
         Vector dodgeDirection = new Vector(0);
         ArrayList<Boid> predators = this.getPredators(r);
         for (Boid p : predators) {
-                if (Vector.distance(p.currentPosition, this.currentPosition) < r) {
-                    dodgeDirection = Vector.sub(dodgeDirection, Vector.sub(p.currentPosition, this.currentPosition));
-                }
+            dodgeDirection = Vector.sub(dodgeDirection, Vector.sub(p.currentPosition, this.currentPosition));
         }
         //dodgeDirection = Vector.div(dodgeDirection, predators.size());
         return (predators.size() == 0) ? dodgeDirection : Vector.div(dodgeDirection, predators.size());
@@ -195,5 +187,10 @@ public class Boid {
         }
         //chaseDirection = Vector.div(chaseDirection, prey.size());
         return (prey.size() == 0) ? chaseDirection : Vector.div(chaseDirection, prey.size());
+    }
+
+
+    ArrayList getObstacles(float r){
+        return new ArrayList();
     }
 }
