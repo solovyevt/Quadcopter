@@ -18,7 +18,6 @@ public class BoidController {
     private int numberOfPredators = 8;
 
     private ArrayList<Boid> boids = new ArrayList<>(numberOfBoids);
-    private ArrayList<Boid> predators = new ArrayList<>(numberOfPredators);
 
     public BoidController(Vector center, float maxRadius, float maxVelocity, int numberOfBoids, int numberOfPredators){
         this.center = center;
@@ -29,15 +28,14 @@ public class BoidController {
         this.numberOfPredators = numberOfPredators;
 
         initializeBoids();
-        initializePredators();
     }
 
     void calculateNewPositions(){
-        for(Boid b: boids){
-            b.calculateNewPosition(boidPreset);
+        for(int i = 0; i < numberOfBoids; i++){
+            boids.get(i).calculateNewPosition(boidPreset);
         }
-        for(Boid p: predators){
-            p.calculateNewPosition(predatorPreset);
+        for(int i = numberOfBoids; i < boids.size(); i++){
+            boids.get(i).calculateNewPosition(predatorPreset);
         }
     }
 
@@ -45,11 +43,8 @@ public class BoidController {
         for(int i = 0; i < numberOfBoids; i++){
             boids.add(new Boid(this, randomSpawnPoint(), randomVelocity(), Color.GREEN, 0));
         }
-    }
-
-    void initializePredators(){
         for(int i = 0; i < numberOfPredators; i++){
-            predators.add(new Boid(this, randomSpawnPoint(), randomVelocity(), Color.RED, 1));
+            boids.add(new Boid(this, randomSpawnPoint(), randomVelocity(), Color.RED, 1));
         }
     }
 
@@ -72,9 +67,7 @@ public class BoidController {
     }
 
     ArrayList<Boid> getBoids(){
-        ArrayList<Boid> result = new ArrayList<>(boids);
-        result.addAll(predators);
-        return result;
+        return boids;
     }
 
     public void render(float dt){
@@ -82,29 +75,25 @@ public class BoidController {
         for(Boid b: boids){
             b.render(dt);
         }
-        for(Boid p: predators){
-            p.render(dt);
-        }
-
     }
 
     private final Tuple[] boidPreset = {
             new Tuple<>(5f, 0.01f),
             new Tuple<>(2f, 1f),
             new Tuple<>(4f, 0.1f),
-            new Tuple<>(3f, 1f),
-            new Tuple<>(2f, 0.01f),
-            new Tuple<>(4f, 0.01f),
-            new Tuple<>(4f, 0.01f),
+            new Tuple<>(3f, 0.1f),
+            new Tuple<>(2f, 0.1f),
+            new Tuple<>(4f, 0.1f),
+            new Tuple<>(4f, 0.1f),
     };
     private final Tuple[] predatorPreset = {
-            new Tuple<>(2f, 0.01f),
+            new Tuple<>(5f, 0.0001f),
             new Tuple<>(1f, 1f),
             new Tuple<>(1f, 0.1f),
-            new Tuple<>(3f, 1f),
-            new Tuple<>(1f, 0.1f),
-            new Tuple<>(5f, 0.01f),
-            new Tuple<>(6f, 0.01f),
+            new Tuple<>(3f, 0.1f),
+            new Tuple<>(2f, 0.1f),
+            new Tuple<>(5f, 0f),
+            new Tuple<>(8f, 0.01f),
     };
 
     public Vector getCenter() {

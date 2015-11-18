@@ -33,10 +33,8 @@ public class Boid {
     ArrayList<Boid> getNeighbors(double r){
         ArrayList<Boid> neighbors = new ArrayList<>();
         for(Boid b: controller.getBoids()){
-            if(Vector.distance(b.getCurrentPosition(), this.currentPosition) < r && b.RANK == this.RANK){
-                if(!b.currentPosition.equals(this.currentPosition)) {
-                    neighbors.add(b);
-                }
+            if(Vector.distance(b.getCurrentPosition(), this.currentPosition) < r && b.RANK == this.RANK && !b.currentPosition.equals(this.currentPosition)){
+                neighbors.add(b);
             }
         }
         return neighbors;
@@ -46,9 +44,7 @@ public class Boid {
         ArrayList<Boid> predators = new ArrayList<>();
         for(Boid b: controller.getBoids()){
             if(Vector.distance(b.getCurrentPosition(), this.currentPosition) < r && b.RANK > this.RANK){
-                if(!b.currentPosition.equals(this.currentPosition)) {
-                    predators.add(b);
-                }
+                predators.add(b);
             }
         }
         return predators;
@@ -58,9 +54,7 @@ public class Boid {
         ArrayList<Boid> prey = new ArrayList<>();
         for(Boid b: controller.getBoids()){
             if(Vector.distance(b.getCurrentPosition(), this.currentPosition) < r && b.RANK < this.RANK){
-                if(!b.currentPosition.equals(this.currentPosition)) {
-                    prey.add(b);
-                }
+                prey.add(b);
             }
         }
         return prey;
@@ -82,7 +76,7 @@ public class Boid {
 
     private void limitVelocity(){
         if(this.currentVelocity.length() > controller.getMaxVelocity()){
-            this.currentVelocity = Vector.mul(Vector.div(this.currentVelocity, this.currentVelocity.length()), controller.getMaxVelocity());
+            this.currentVelocity = Vector.mul(currentVelocity.normalize(), controller.getMaxVelocity());
         }
     }
 
@@ -118,6 +112,7 @@ public class Boid {
     //@TODO Пересмотреть механизм применения правил
     final void calculateNewPosition(Tuple<Float, Float>... c){
         Vector r1, r2, r3, r4, r5, r6, r7;
+        //@TODO проблема с движением боидов  к центру масс, при использовании боиды просто исчезают :/
         r1 = Vector.mul(moveToLocalCenter(c[0].x), c[0].y);
         //@TODO Допилить уклонение от объектов сцены, пока не работает
         r2 = Vector.mul(keepDistance(c[1].x), c[1].y);
@@ -126,7 +121,7 @@ public class Boid {
         r5 = Vector.mul(dodgeNeighbors(c[4].x), c[4].y);
         r6 = Vector.mul(dodgePredators(c[5].x), c[5].y);
         r7 = Vector.mul(chasePrey(c[6].x), c[6].y);
-        currentVelocity = Vector.add(Vector.div(currentVelocity, currentVelocity.length() / defaultVelocity), r1, r2, r4, r5, r6, r7);
+        currentVelocity = Vector.add(Vector.mul(currentVelocity, defaultVelocity/currentVelocity.length()), r1, r3, r4, r5, r6, r7);
         currentPosition = Vector.add(currentPosition, currentVelocity);
         limitVelocity();
     }
@@ -136,11 +131,9 @@ public class Boid {
         Vector center = new Vector(0);
         ArrayList<Boid> neighbors = this.getNeighbors(r);
         for(Boid b: neighbors){
-            if(!b.currentPosition.equals(this.currentPosition)) {
-                center = Vector.add(center, b.getCurrentPosition());
-            }
+            center = Vector.add(center, b.getCurrentPosition());
         }
-        center = Vector.div(center, neighbors.size());
+        //center = Vector.div(center, neighbors.size());
         return Vector.sub(center, this.currentPosition);
     }
 
@@ -148,13 +141,6 @@ public class Boid {
     Vector keepDistance(float r) {
         Vector dodgeDirection = new Vector(0);
         ArrayList obstacles = this.getObstacles(r);
-//        for (Boid b : neighbors) {
-//            if(!b.currentPosition.equals(this.currentPosition)){
-//                if (Vector.distance(b.currentPosition, this.currentPosition) < r) {
-//                    dodgeDirection = Vector.sub(dodgeDirection, Vector.mul(Vector.sub(b.currentPosition, this.currentPosition), 1 / Vector.distance(b.currentPosition, this.currentPosition)));
-//                }
-//            }
-//        }
         return dodgeDirection;
     }
     ArrayList getObstacles(float r){
@@ -170,7 +156,7 @@ public class Boid {
                     acceleration = Vector.add(acceleration, b.currentVelocity);
                 }
         }
-        acceleration = Vector.div(acceleration, neighbors.size());
+        //acceleration = Vector.div(acceleration, neighbors.size());
         return acceleration;
     }
 
@@ -180,11 +166,11 @@ public class Boid {
         ArrayList<Boid> neighbors = this.getNeighbors(r);
         for (Boid b : neighbors) {
             if (Vector.distance(b.currentPosition, this.currentPosition) < r) {
-                    dodgeDirection = Vector.sub(dodgeDirection, Vector.mul(Vector.sub(b.currentPosition, this.currentPosition), 1 / Vector.distance(b.currentPosition, this.currentPosition)));
+                    dodgeDirection = Vector.sub(dodgeDirection, Vector.mul(Vector.sub(b.currentPosition, this.currentPosition), 1/Vector.distance(b.currentPosition, this.currentPosition)));
             }
         }
         //dodgeDirection = Vector.div(dodgeDirection, neighbors.size());
-        return dodgeDirection;
+        return (neighbors.size() == 0) ? dodgeDirection : Vector.div(dodgeDirection, neighbors.size());
     }
 
     //Уклонение от хищников
@@ -197,7 +183,7 @@ public class Boid {
                 }
         }
         //dodgeDirection = Vector.div(dodgeDirection, predators.size());
-        return dodgeDirection;
+        return (predators.size() == 0) ? dodgeDirection : Vector.div(dodgeDirection, predators.size());
     }
 
     //Погоня за жертвой
@@ -205,11 +191,9 @@ public class Boid {
         Vector chaseDirection = new Vector(0);
         ArrayList<Boid> prey = this.getPrey(r);
         for (Boid p : prey) {
-                if (Vector.distance(p.currentPosition, this.currentPosition) < r) {
-                    chaseDirection = Vector.add(chaseDirection, Vector.sub(p.currentPosition, this.currentPosition));
-                }
+            chaseDirection = Vector.add(chaseDirection, Vector.sub(p.currentPosition, this.currentPosition));
         }
         //chaseDirection = Vector.div(chaseDirection, prey.size());
-        return chaseDirection;
+        return (prey.size() == 0) ? chaseDirection : Vector.div(chaseDirection, prey.size());
     }
 }
