@@ -23,7 +23,7 @@ public class Simulator {
 		camera = new Camera(aspectRatio, 0f, 2f, 7f);
 		camera.applyPerspectiveMatrix();
 		
-		lightShader = new Shader("resources/shaders/light.vert", "resources/shaders/light.frag");
+		lightShader = new Shader("src/main/resources/shaders/light.vert", "src/main/resources/shaders/light.frag");
 
         controller = new BoidController(new Vector(0), 20f, 0.5f, 64, 8);
 		while (!Display.isCloseRequested()) {
