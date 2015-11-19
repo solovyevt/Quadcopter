@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 /**
- * Created by solovyevt on 14.11.15 14:10.
+ * Created by solovyevt on 14.11.15 14:10 14:00 14:03.
  */
 public class BoidController{
 

@@ -3,7 +3,7 @@ package gamepad;
 import static org.junit.Assert.*;
 
 /**
- * Created by solovyevt on 13.11.15 14:10.
+ * Created by solovyevt on 13.11.15 14:10 14:03.
  */
 public class GamepadControlTest {
 

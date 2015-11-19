@@ -9,7 +9,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 /**
- * Created by solovyevt on 03.11.15.
+ * Created by solovyevt on 03.11.15 14:06.
  */
 public class GamepadControl implements Observer {
     static Controller controller;

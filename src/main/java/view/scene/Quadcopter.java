@@ -1,9 +1,6 @@
 package view.scene;
 
 import utils.Vector;
-import org.lwjgl.opengl.GL11;
-
-import java.awt.*;
 
 //@TODO
 public class Quadcopter {

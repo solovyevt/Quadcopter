@@ -1,7 +1,7 @@
 package utils;
 
 /**
- * Created by solovyevt on 17.11.15 14:10.
+ * Created by solovyevt on 17.11.15 14:10 14:03.
  */
 public class Tuple<X, Y> {
     public final X x;
