@@ -7,6 +7,7 @@ import view.scene.Primitives;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Observable;
 
 /**
  * Created by solovyevt on 14.11.15 14:11.
@@ -14,15 +15,33 @@ import java.util.ArrayList;
 
 /*
 REMEMBAH: может быть несколько групп боидов, и каждая группа может иметь свои правила поведения
+ @TODO Вынести все вычисления в акторы, BoidControllerActor и BoidActor взаимодействуют только между собой и только при помощи сообщений
+ @TODO Добавить физику
+ @TODO Вынести все, что связано с рендерингом, в view
+ @TODO Покурить мануалы по методу Верле
+ @TODO Обнаружен странный баг: один из боидов часто начинает крутиться по спирали в центре, как только его подхватывает другой боид - все ок.
  */
-public class Boid extends Thread {
-    public final int RANK;
+public class Boid extends Observable {
+    public final byte RANK;
     float defaultVelocity = 0.1f;
     BoidController controller;
     Vector currentPosition;
+
+    public Vector getCurrentVelocity() {
+        return currentVelocity;
+    }
+
     Vector currentVelocity;
+
+    public Color getColor() {
+        return color;
+    }
+
     Color color;
-    Boid(BoidController controller, Vector initPosition, Vector initVelocity, Color color, int rank){
+    float m;
+
+    Boid(BoidController controller, Vector initPosition, Vector initVelocity, Color color, byte rank){
+        this.addObserver(Simulator.view);
         this.controller = controller;
         this.currentPosition = initPosition;
         this.currentVelocity = initVelocity;
@@ -33,7 +52,18 @@ public class Boid extends Thread {
     ArrayList<Boid> getNeighbors(double r){
         ArrayList<Boid> neighbors = new ArrayList<>();
         for(Boid b: controller.getBoids()){
-            if(Vector.distance(b.getCurrentPosition(), this.currentPosition) < r && b.RANK == this.RANK && !b.currentPosition.equals(this.currentPosition)){
+            if(Vector.manhattanDistance(b.getCurrentPosition(), this.currentPosition) < r){
+                neighbors.add(b);
+            }
+        }
+        return neighbors;
+    }
+
+
+    ArrayList<Boid> getMates(double r){
+        ArrayList<Boid> neighbors = new ArrayList<>();
+        for(Boid b: controller.getBoids()){
+            if(Vector.manhattanDistance(b.getCurrentPosition(), this.currentPosition) < r && b.RANK == this.RANK && !b.currentPosition.equals(this.currentPosition)){
                 neighbors.add(b);
             }
         }
@@ -43,7 +73,7 @@ public class Boid extends Thread {
     ArrayList<Boid> getPredators(double r){
         ArrayList<Boid> predators = new ArrayList<>();
         for(Boid b: controller.getBoids()){
-            if(Vector.distance(b.getCurrentPosition(), this.currentPosition) < r && b.RANK > this.RANK){
+            if(Vector.manhattanDistance(b.getCurrentPosition(), this.currentPosition) < r && b.RANK > this.RANK){
                 predators.add(b);
             }
         }
@@ -53,7 +83,7 @@ public class Boid extends Thread {
     ArrayList<Boid> getPrey(double r){
         ArrayList<Boid> prey = new ArrayList<>();
         for(Boid b: controller.getBoids()){
-            if(Vector.distance(b.getCurrentPosition(), this.currentPosition) < r && b.RANK < this.RANK){
+            if(Vector.manhattanDistance(b.getCurrentPosition(), this.currentPosition) < r && b.RANK < this.RANK){
                 prey.add(b);
             }
         }
@@ -64,7 +94,8 @@ public class Boid extends Thread {
         return currentPosition;
     }
 
-    public void render(){
+    @Deprecated
+    public void render(float dt){
         GL11.glPushMatrix();
         GL11.glTranslatef(currentPosition.x, currentPosition.y, currentPosition.z);
         Primitives.setColor(this.color);
@@ -121,15 +152,18 @@ public class Boid extends Thread {
         r5 = Vector.mul(dodgeNeighbors(c[4].x), c[4].y);
         r6 = Vector.mul(dodgePredators(c[5].x), c[5].y);
         r7 = Vector.mul(chasePrey(c[6].x), c[6].y);
-        currentVelocity = Vector.add(Vector.mul(currentVelocity, defaultVelocity/currentVelocity.length()), r1, r3, r4, r5, r6, r7);
-        currentPosition = Vector.add(currentPosition, currentVelocity);
+        currentVelocity = Vector.add(Vector.mul(currentVelocity, defaultVelocity / currentVelocity.length()), r1, r2, r3, r4, r5, r6, r7);
+         currentPosition = Vector.add(currentPosition, currentVelocity);
         limitVelocity();
+        this.setChanged();
+        notifyObservers(this);
     }
 
     //Правило определяющее движение боида к центру масс окружающих его боидов
+
     Vector moveToLocalCenter(float r){
         Vector center = new Vector(0);
-        ArrayList<Boid> neighbors = this.getNeighbors(r);
+        ArrayList<Boid> neighbors = this.getMates(r);
         for(Boid b: neighbors){
             center = Vector.add(center, b.getCurrentPosition());
         }
@@ -138,30 +172,36 @@ public class Boid extends Thread {
     }
 
     //@TODO Правило, сохраняющее дистанцию до препятствий на пути
+    //@TODO Это - крайне дерьмовый способ избегать коллизий. Нужно поддерживать расстояние каким-то иным спосоом.
     Vector keepDistance(float r) {
         Vector dodgeDirection = new Vector(0);
-        ArrayList obstacles = this.getObstacles(r);
-        return dodgeDirection;
+        ArrayList<Boid> neighbors = this.getNeighbors(r);
+        for (Boid b : neighbors) {
+            //dodgeDirection = Vector.sub(dodgeDirection, Vector.mul(Vector.sub(b.currentPosition, this.currentPosition), 0.1f / Vector.manhattanDistance(b.currentPosition, this.currentPosition)));
+            dodgeDirection = Vector.sub(dodgeDirection, Vector.sub(b.currentPosition, this.currentPosition));
+        }
+        //dodgeDirection = Vector.div(dodgeDirection, neighbors.size());
+        return (neighbors.size() == 0) ? dodgeDirection : Vector.div(dodgeDirection, neighbors.size());
     }
 
 
     //Правило выравнивающее скорость с соседними боидами
     Vector keepVelocity(float r){
         Vector acceleration = new Vector(0);
-        ArrayList<Boid> neighbors = this.getNeighbors(r);
-        for (Boid b : neighbors) {
+        ArrayList<Boid> mates = this.getMates(r);
+        for (Boid b : mates) {
             acceleration = Vector.add(acceleration, b.currentVelocity);
         }
         //acceleration = Vector.div(acceleration, neighbors.size());
-        return (neighbors.size() == 0) ? acceleration : Vector.div(acceleration, neighbors.size());
+        return (mates.size() == 0) ? acceleration : Vector.div(acceleration, mates.size());
     }
 
     //Уклонение от соседей
     Vector dodgeNeighbors(float r){
         Vector dodgeDirection = new Vector(0);
-        ArrayList<Boid> neighbors = this.getNeighbors(r);
+        ArrayList<Boid> neighbors = this.getMates(r);
         for (Boid b : neighbors) {
-            dodgeDirection = Vector.sub(dodgeDirection, Vector.mul(Vector.sub(b.currentPosition, this.currentPosition), 1 / Vector.distance(b.currentPosition, this.currentPosition)));
+            dodgeDirection = Vector.sub(dodgeDirection, Vector.mul(Vector.sub(b.currentPosition, this.currentPosition), 1 / Vector.manhattanDistance(b.currentPosition, this.currentPosition)));
         }
         //dodgeDirection = Vector.div(dodgeDirection, neighbors.size());
         return (neighbors.size() == 0) ? dodgeDirection : Vector.div(dodgeDirection, neighbors.size());
@@ -183,7 +223,7 @@ public class Boid extends Thread {
         Vector chaseDirection = new Vector(0);
         ArrayList<Boid> prey = this.getPrey(r);
         for (Boid p : prey) {
-            chaseDirection = Vector.add(chaseDirection, Vector.mul(Vector.sub(p.currentPosition, this.currentPosition), 1/ Vector.distance(p.currentPosition, this.currentPosition)));
+            chaseDirection = Vector.add(chaseDirection, Vector.mul(Vector.sub(p.currentPosition, this.currentPosition), 1 / Vector.manhattanDistance(p.currentPosition, this.currentPosition)));
         }
         //chaseDirection = Vector.div(chaseDirection, prey.size());
         return (prey.size() == 0) ? chaseDirection : Vector.div(chaseDirection, prey.size());
@@ -193,8 +233,13 @@ public class Boid extends Thread {
     ArrayList getObstacles(float r){
         return new ArrayList();
     }
-    @Override
-    public void run(){
-        calculateNewPosition();
+
+
+    //@TODO Возвращение вектора состояния боида. В дальнейшем стоит расширить и заменить этим методом все прямые обращения к элементам боида. Наверное?
+    ArrayList<Vector> getCurrentState(){
+        ArrayList<Vector> state = new ArrayList<>();
+        state.add(currentPosition);
+        state.add(currentVelocity);
+        return state;
     }
 }

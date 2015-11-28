@@ -6,16 +6,15 @@ import org.lwjgl.input.Controller;
 import org.lwjgl.input.Controllers;
 
 import java.util.Observable;
-import java.util.Observer;
 
 /**
  * Created by solovyevt on 03.11.15 14:06.
  */
-public class GamepadControl implements Observer {
-    static Controller controller;
+public class GamepadControl extends Observable implements Runnable{
+    Controller controller;
+    boolean running = true;
 
-
-    public static void run(){
+    GamepadControl(){
         try {
             Controllers.create();
         } catch (LWJGLException e) {
@@ -39,37 +38,31 @@ public class GamepadControl implements Observer {
         }
     }
 
-    public static void main (String[] args){
-        run();
-    }
-
-    @Override
-    public void update(Observable o, Object arg) {
-
-    }
-
-    //Testing
-    public void testKeys(){
+    public void run(){
         float[] currentAxisValues = new float[4];
-        while(true){
+        while(running){
             controller.poll();
             float[] bufferValues = new float[4];
             bufferValues[0] = controller.getXAxisValue();
             bufferValues[1] = controller.getYAxisValue();
             bufferValues[2] = controller.getZAxisValue();
             bufferValues[3] = controller.getRZAxisValue();
-            if(currentAxisValues.hashCode() != bufferValues.hashCode()){
+            if(!currentAxisValues.equals(bufferValues)){
                 for(float v: bufferValues){
                     System.out.print(v + "  ");
                 }
                 System.out.println("\n");
             }
             try {
-                Thread.sleep(1000);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
 
         }
+    }
+
+    public void terminate(){
+        running = false;
     }
 }

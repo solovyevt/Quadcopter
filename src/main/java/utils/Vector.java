@@ -75,9 +75,13 @@ public class Vector {
 		return new Vector(v1.x-v2.x, v1.y-v2.y, v1.z - v2.z);
 	}
 	
-	static public float distance(Vector v1, Vector v2) {
-		return sub(v2, v1).length();
+	static public float manhattanDistance(Vector v1, Vector v2) {
+        return (Math.abs(v2.x - v1.x) + Math.abs(v2.y - v1.y) + Math.abs(v2.z - v1.z));
 	}
+
+    static public float euclidianDistance(Vector v1, Vector v2) {
+        return sub(v2, v1).length();
+    }
 	
 	static public float dot(Vector v1, Vector v2) {
 		return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z;

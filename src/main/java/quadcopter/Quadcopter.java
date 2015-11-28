@@ -1,13 +1,19 @@
-package view.scene;
+package quadcopter;
 
 import utils.Vector;
 
+import java.util.Observable;
+
 //@TODO
-public class Quadcopter {
+public class Quadcopter extends Observable {
 	
 	private float thrust = 0;
+	
+	// Крен, phi, roll
 	private float yaw = 0;
+	// Тангаж, theta, pitch
 	private float pitch = 0;
+	// Рыскание, psi, yaw
 	private float roll = 0;
 
 	private float x, y, z;
@@ -28,6 +34,7 @@ public class Quadcopter {
     	float z = (float) (Math.cos(Math.toRadians(90+pitch))*Math.cos(Math.toRadians(180-yaw+roll)));
     	return new Vector(x, y, z).normalize();
     }
+
 	/*
 	public void render(float dt) {
 		update(dt);

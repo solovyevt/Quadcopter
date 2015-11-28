@@ -5,6 +5,7 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import utils.Vector;
+import view.BoidView;
 import view.scene.camera.Camera;
 import view.scene.Shader;
 
@@ -15,8 +16,10 @@ public class Simulator {
 	private Camera camera;
 	private Shader lightShader;
     BoidController controller;
+	private long lastTime = 0;
+	static BoidView view = new BoidView();
 	
-	public void start() {
+	public void start(){
 		setupDisplay();
 		
 		float aspectRatio = (float) Display.getWidth() / (float) Display.getHeight();
@@ -25,10 +28,14 @@ public class Simulator {
 		
 		lightShader = new Shader("src/main/resources/shaders/light.vert", "src/main/resources/shaders/light.frag");
 
+		lastTime = System.currentTimeMillis();
+
         controller = new BoidController(new Vector(0), 20f, 0.5f, 64, 8);
+
 		while (!Display.isCloseRequested()) {
+			float dt = (System.currentTimeMillis()-lastTime)/1000f;;
 			checkInputs();
-			render();
+			render(dt);
 			
 			Display.update();
 			Display.sync(60);
@@ -52,7 +59,7 @@ public class Simulator {
 		camera.processKeyboard(16, 0.01f, 0.01f, 0.01f);
 	}
 	
-	public void render() {
+	public void render(float dt) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(1f, 1f, 1f, 1f);
 
@@ -70,7 +77,7 @@ public class Simulator {
 		lightShader.setUniform("viewMatrix", false, camera.getViewMatrix());
 		
 
-		controller.render();
+		controller.render(dt);
 		
 		//Primitives.setColor(Color.GRAY);
 		//Primitives.drawPlane(Vector.UP, 100, 100);
