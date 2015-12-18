@@ -16,7 +16,7 @@ public class BoidView implements Observer {
     public BoidView(){
 
     }
-    @Override
+    
     public void update(Observable o, Object arg) {
         if(arg instanceof Boid){
             render((Boid) arg);

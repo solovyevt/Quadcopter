@@ -30,10 +30,10 @@ public class Simulator {
 
 		lastTime = System.currentTimeMillis();
 
-        controller = new BoidController(new Vector(0), 20f, 0.5f, 64, 8);
+        controller = new BoidController(new Vector(0), 20f, 0.5f, 256, 32);
 
 		while (!Display.isCloseRequested()) {
-			float dt = (System.currentTimeMillis()-lastTime)/1000f;;
+			float dt = (System.currentTimeMillis()-lastTime)/1000f;
 			checkInputs();
 			render(dt);
 			

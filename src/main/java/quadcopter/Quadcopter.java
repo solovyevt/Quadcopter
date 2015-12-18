@@ -8,7 +8,7 @@ import java.util.Observable;
 public class Quadcopter extends Observable {
 	
 	private float thrust = 0;
-	
+
 	// Крен, phi, roll
 	private float yaw = 0;
 	// Тангаж, theta, pitch
