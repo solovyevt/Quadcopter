@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Quadcopter.iml" filepath="$PROJECT_DIR$/Quadcopter.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../vrepQuadcopters/vrepQuadcopters.iml" filepath="$PROJECT_DIR$/../vrepQuadcopters/vrepQuadcopters.iml" />
     </modules>
   </component>
 </project>
